@@ -10,8 +10,20 @@ public class SmallConsole {
 
 	public static void main(String[] args){
 		SmallConsole sCons = new SmallConsole();
-		System.out.println("\u001b[31mPress ESC key 3 times to exit.\u001b[0m");
 		try{
+			//Handling ctrl+C with shutdown hook
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				public void run(){
+					try{
+						//Recover default sCons behaviour
+						sCons.stty("echo");
+						sCons.stty("sane");
+					}catch(InterruptedException e){ e.printStackTrace(); 
+					}catch(IOException e){ e.printStackTrace(); } 
+				}
+			});
+
+			System.out.println("\u001b[31m" + "CTRL+C or press ESC key 3 times to exit." + "\u001b[0m");
 			sCons.setTerminalToCBreak();
 			mainLoop:
 			while(true){
@@ -233,4 +245,5 @@ public class SmallConsole {
 		String result = new String(bout.toByteArray());
 		return result;
 	}
+
 }
