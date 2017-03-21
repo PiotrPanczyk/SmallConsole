@@ -125,7 +125,8 @@ public class SmallConsole {
 
 		System.out.println("\nRunning command: " + cmd);
 		history.add(cmd.toString());
-		histIndex=history.size() - 1;
+		//Setting histIndex 1 position past last elemnt so we can use decrement and display on upArrow key
+		histIndex=history.size(); 
 		cmd.delete(0, cmd.length());
 		cursorIndex=0; 
 	}
@@ -138,12 +139,9 @@ public class SmallConsole {
 	}
 
 	private void handleUpKey(){
-		if(history.size() > 0){
-			if(histIndex >= 0 && histIndex < history.size()){
-				cmd = new StringBuilder(history.get(histIndex));
-				this.print();
-				if(histIndex > 0) histIndex--;
-			}
+		if(history.size() > 0 && histIndex > 0){
+			cmd = new StringBuilder(history.get(--histIndex));
+			this.print();
 		}
 	}
 
@@ -151,6 +149,12 @@ public class SmallConsole {
 		if(history.size() > 0 && histIndex < (history.size() - 1)){
 			cmd = new StringBuilder(history.get(++histIndex));
 			this.print();
+		}
+		else if(histIndex == history.size()-1){
+			//Setting histIndex 1 position past last elemnt so we can use decrement and display on upArrow key
+			++histIndex; 
+			cmd = new StringBuilder();
+			this.print(); // Print empty line
 		}
 	}
 
