@@ -29,7 +29,7 @@ public class SmallConsole {
 			while(true){
 				if (System.in.available() != 0){
 					int c = System.in.read();
-					//System.out.println("Key code: " + c + ", " + (char) c);
+					//System.out.println("Code: " + c + ", " + (char) c);
 					if(c >= 32 && c <= 126){ //ASCII printable character range
 						System.out.print("\u001b[1000D"); //Move all the way left       
 						if(sCons.cursorIndex >= sCons.cmd.length())
@@ -58,13 +58,16 @@ public class SmallConsole {
 							case EXIT: break mainLoop;
 							case HOME: sCons.handleHomeKey(); continue mainLoop;
 							case END: sCons.handleEndKey(); continue mainLoop;
-							case DEFAULT: sCons.print("EcsapeKeyCode: 27 -> "+ Arrays.toString(cmdSeq)); 
+							case DELETE: sCons.handleDeleteKey(); continue mainLoop;
+							case DEFAULT: sCons.print("EcsapeKeyCode: 27 -> "+ 
+											Arrays.toString(cmdSeq)); 
 									continue mainLoop;
 						}
-					}else if(c == specialKey.RETURN.keyCode){
+					}else if(c == specialKey.RETURN.keyCode || c == specialKey.RETURN.keyCode2){
 						sCons.runCmd(sCons.cmd);                                                                                               
 					}else if(c == specialKey.BACKSPACE.keyCode){
 						sCons.handleBackspace();
+						//continue;
 					}else{
 						sCons.print("KeyCode: "+ c);
 						continue;
@@ -85,16 +88,23 @@ public class SmallConsole {
 
 	private enum specialKey {
 		ESC (27),
-		RETURN (10),
+		RETURN (10, 13),
 		BACKSPACE (127);
 		final int keyCode;
+		final int keyCode2;
 
 		private specialKey (int keyCode){
 			this.keyCode = keyCode;
+			this.keyCode2 = -1;
+		}
+
+		private specialKey (int keyCode, int keyCode2){
+			this.keyCode = keyCode;
+			this.keyCode2 = keyCode2;
 		}
 	}
 
-	private enum escKeys {LEFT, RIGHT, UP, DOWN, EXIT, HOME, END, DEFAULT};
+	private enum escKeys {LEFT, RIGHT, UP, DOWN, EXIT, HOME, END, DELETE, DEFAULT};
 
 	private escKeys recognizeEscKey (int c1, int c2){
 		if(c1 == 91){
@@ -110,6 +120,8 @@ public class SmallConsole {
 				return escKeys.HOME;
 			if(c2 == 70)
 				return escKeys.END;
+			if(c2 == 51)
+				return escKeys.DELETE;
 		}
 		
 		if(c1 == 27 && c2 == 27)
@@ -129,6 +141,13 @@ public class SmallConsole {
 		histIndex=history.size(); 
 		cmd.delete(0, cmd.length());
 		cursorIndex=0; 
+	}
+
+	private void handleDeleteKey(){
+		if(cmd.length() > 0 && cursorIndex > 0){
+			cmd.deleteCharAt(cursorIndex--);
+			this.print();
+		}
 	}
 
 	private void handleBackspace(){
